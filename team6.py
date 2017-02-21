@@ -1,9 +1,13 @@
-
-
+import random
+import sys
+import copy
+import time
 
 class Player6:
     # Player6 agent to play game.
-
+    def __init__(self):
+        self.ply
+        #Rest of the variables will be defined
 
     # Function implementing minmax algorithm with alph-beta pruning.
     def MinMax(self, board, status_blocks, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn):
@@ -42,22 +46,157 @@ class Player6:
 
             utility = MinMax() # agains call MinMax
 
-            if node_type_maxnode: """ Rules for PRONING """
+            if node_type_maxnode: """ Rules for PRUNING """
                 if utility > alpha:
                     alpha = utility
                     best_row = move[0]
                     best_coloumn = move[1]
-            else:   """ Rules for PRONING """
+            else:   """ Rules for PRUNING """
                 if utility < beta:
                     beta = utility
                     best_row = move[0]
                     best_coloumn = move[1]
             board[move[0]][move[1]] = '-'
 
-            if alpha > beta: """ Rules for PRONING """
+            if alpha > beta: """ Rules for PRUNING """
                 break;
 
         if node_type_maxnode:
             return (alpha, best_row, best_coloumn)
         else
             return (beta, best_row, best_coloumn)
+
+
+    def get_utility(self, board, block, playerFlag, opFlag):
+    """
+    Function to find and return utility of a block 
+    :param board: is the list of lists that represents the 9x9 grid
+    :param block: is a list that represents if a block is won or available to play in
+    :param playerFlag: player marker
+    :param opFlag: Opponent Marker
+    """
+
+        utility_values_block = [0 for i in range(16)]
+        for i in range(16):
+            utility_values_block[i] = self.calc_utility(board, i, playerFlag)
+        gain = 0
+        lim = 100.0
+        for i in range(16):
+            utility_values_block[i] /= lim
+        for i in range(4):
+            p = 0
+            positive = 0
+            negative = 0
+            for j in range(4):
+                p += utility_values_block[j * 4 + i]
+                if block[j * 4 + i] == playerFlag:
+                    positive += 1
+                elif block[j * 4 + i] == opFlag:
+                    negative += 1
+            gain = self.get_factor(p, gain)
+            gain = self.get_new(positive, negative, gain)
+        for j in range(4):
+            p = 0
+            positive = 0
+            negative = 0
+            for i in range(4):
+                p += utility_values_block[j * 3 + i]
+                if block[j * 4 + i] == playerFlag:
+                    positive += 1
+                elif block[j * 4 + i] == opFlag:
+                    negative += 1
+            gain = self.get_factor(p, gain)
+            gain = self.get_new(positive, negative, gain)
+
+        p = 0
+        positive = 0
+        negative = 0
+        for i in range(4):
+            p += utility_values_block[4 * i + i]
+            if block[i * 4 + i] == playerFlag:
+                positive += 1
+            elif block[i * 4 + i] == opFlag:
+                negative += 1
+        gain = self.get_factor(p, gain)
+        gain = self.get_new(positive, negative, gain)
+
+        """p = 0
+        positive = 0
+        negative = 0
+        for i in range(1, 4):
+            p += utility_values_block[2 * i]
+            if block[i * 2] == playerFlag:
+                positive += 1
+            elif block[i * 2] == opFlag:
+                negative += 1
+        gain = self.get_new(positive, negative, gain)
+        gain = self.get_factor(p, gain)
+"""
+        if self.cntp < 2:
+            if block[4] == playerFlag:
+                gain += 10
+            elif block[4] != '-':
+                gain -= 10
+        cnt1 = block.count(playerFlag)
+        cnt2 = block.count(opFlag)
+        if self.cntp < cnt1 and cnt2 == self.cnto:
+            gain += 50
+        elif cnt1 > self.cntp and (cnt1 - self.cntp) < (cnt2 - self.cnto):
+            gain -= 20
+        elif cnt1 < self.cntp and cnt2 > self.cnto:
+            gain -= 50
+        return gain
+
+
+    def calc_utility(self, board, boardno, playerFlag):
+
+        gain = 0
+        startx = boardno / 4
+        starty = boardno % 4
+        starty *= 4
+        startx *= 4
+        for i in range(startx, startx + 4):
+            positive = 0
+            negative = 0
+            neutral = 0
+            for j in range(starty, starty + 4):
+                if board[i][j] == '-':
+                    neutral += 1
+                elif board[i][j] == playerFlag:
+                    positive += 1
+                else:
+                    negative += 1
+            gain = self.calc(positive, negative, gain)
+
+        for j in range(starty, starty + 4):
+            positive = 0
+            negative = 0
+            neutral = 0
+            for i in range(startx, startx + 4):
+                if board[i][j] == '-':
+                    neutral += 1
+                elif board[i][j] == playerFlag:
+                    positive += 1
+                else:                                   
+                    negative += 1
+            gain = self.calc(positive, negative, gain)
+        positive = 0
+        neutral = 0
+        negative = 0
+        for i in range(0, 4):
+            if board[startx + i][starty + i] == playerFlag:
+                positive += 1
+            elif board[startx + i][starty + i] == '-':
+                neutral += 1
+            else:
+                negative += 1
+        gain = self.calc(positive, negative, gain)
+        for i in range(0, 4):
+            if board[startx + i][starty + 2 - i] == playerFlag:
+                positive += 1
+            elif board[startx + i][starty + 2 - i] == '-':
+                neutral += 1
+            else:
+                negative += 1
+        gain = self.calc(positive, negative, gain)
+        return gain
