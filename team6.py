@@ -6,7 +6,12 @@ import time
 class Player6:
     # Player6 agent to play game.
     def __init__(self):
-        self.ply
+        self.MaxDepth
+        self.block = ['-' for i in range(16)]
+        self.num = 0
+        self.cntp = 0
+        self.cnto = 0
+        pass
         #Rest of the variables will be defined
 
     # Function implementing minmax algorithm with alph-beta pruning.
@@ -22,15 +27,16 @@ class Player6:
     """
 
     if depth == self.MaxDepth:
-        utility = self.get_utility(board,block,player_sign,opponent_sign)
+        utility = self.get_utility(board,player_sign,opponent_sign)
         return (utility, best_row, best_coloumn)
 
     else:
-        available_moves = find_valid_move_cells(board, block, old_move)
+        available_moves = block.find_valid_move_cells(old_move)
 
         NOT SURE ABOUT THIS
         if len(available_moves) == 0:       ##### No moves left at depth
-            utility = get_utility()
+            utility = self.get_utility(board,player_sign,opponent_sign)
+            
             self.MaxDepth = max(depth, 3)
             return (utility, best_row, best_coloumn)
 
@@ -66,7 +72,7 @@ class Player6:
         else
             return (beta, best_row, best_coloumn)
 
-    def move(self, board, block, old_move, player_flag):
+    def move(self, board, old_move, player_flag):
         """
         :param board: is the list of lists that represents the 9x9 grid
         :param block: is a list that represents if a block is won or available to play in
@@ -85,11 +91,11 @@ class Player6:
         else:
             flag2 = 'o'
         self.num += 1
-        max_ply = 5
-        self.cntp = block.count(player_flag)
-        self.cnto = block.count(flag2)
+        max_MaxDepth = 5
+        self.cntp = self.block.count(player_flag)
+        self.cnto = self.block.count(flag2)
         if self.cnto - self.cntp > 1 or self.num > 25 or self.cntp == 2:
-            self.ply = max_ply
+            self.MaxDepth = max_MaxDepth
         temp_board = copy.deepcopy(board)
         temp_block = copy.deepcopy(block)
         next_move = self.minimax(temp_board, temp_block, old_move, True, player_flag, flag2, 0, -100000.0, 100000.0, -1,
@@ -99,7 +105,7 @@ class Player6:
         return (next_move[1], next_move[2])
 
 
-    def get_utility(self, board, block, playerFlag, opFlag):
+    def get_utility(self, board, playerFlag, opFlag):
     """
     Function to find and return utility of a block 
     :param board: is the list of lists that represents the 9x9 grid
@@ -121,9 +127,9 @@ class Player6:
             negative = 0
             for j in range(4):
                 p += utility_values_block[j * 4 + i]
-                if block[j * 4 + i] == playerFlag:
+                if self.block[j * 4 + i] == playerFlag:
                     positive += 1
-                elif block[j * 4 + i] == opFlag:
+                elif self.block[j * 4 + i] == opFlag:
                     negative += 1
             gain = self.get_factor(p, gain)
             gain = self.get_new(positive, negative, gain)
@@ -133,9 +139,9 @@ class Player6:
             negative = 0
             for i in range(4):
                 p += utility_values_block[j * 3 + i]
-                if block[j * 4 + i] == playerFlag:
+                if self.block[j * 4 + i] == playerFlag:
                     positive += 1
-                elif block[j * 4 + i] == opFlag:
+                elif self.block[j * 4 + i] == opFlag:
                     negative += 1
             gain = self.get_factor(p, gain)
             gain = self.get_new(positive, negative, gain)
@@ -145,9 +151,9 @@ class Player6:
         negative = 0
         for i in range(4):
             p += utility_values_block[4 * i + i]
-            if block[i * 4 + i] == playerFlag:
+            if self.block[i * 4 + i] == playerFlag:
                 positive += 1
-            elif block[i * 4 + i] == opFlag:
+            elif self.block[i * 4 + i] == opFlag:
                 negative += 1
         gain = self.get_factor(p, gain)
         gain = self.get_new(positive, negative, gain)
@@ -157,20 +163,20 @@ class Player6:
         negative = 0
         for i in range(1, 4):
             p += utility_values_block[2 * i]
-            if block[i * 2] == playerFlag:
+            if self.block[i * 2] == playerFlag:
                 positive += 1
-            elif block[i * 2] == opFlag:
+            elif self.block[i * 2] == opFlag:
                 negative += 1
         gain = self.get_new(positive, negative, gain)
         gain = self.get_factor(p, gain)
 
         if self.cntp < 2:
-            if block[4] == playerFlag:
+            if self.block[4] == playerFlag:
                 gain += 10
-            elif block[4] != '-':
+            elif self.block[4] != '-':
                 gain -= 10
-        cnt1 = block.count(playerFlag)
-        cnt2 = block.count(opFlag)
+        cnt1 = self.block.count(playerFlag)
+        cnt2 = self.block.count(opFlag)
         if self.cntp < cnt1 and cnt2 == self.cnto:
             gain += 50
         elif cnt1 > self.cntp and (cnt1 - self.cntp) < (cnt2 - self.cnto):
