@@ -22,18 +22,18 @@ class Player6:
     """
 
     if depth == self.MaxDepth:
-        utility = get_utility()
+        utility = self.get_utility(board,block,player_sign,opponent_sign)
         return (utility, best_row, best_coloumn)
 
     else:
-        available_moves = give_available_moves()
-        """
+        available_moves = find_valid_move_cells(board, block, old_move)
+
         NOT SURE ABOUT THIS
         if len(available_moves) == 0:       ##### No moves left at depth
             utility = get_utility()
             self.MaxDepth = max(depth, 3)
             return (utility, best_row, best_coloumn)
-        """
+
         if depth == 0:     """ If at first level we have around 56 cells then decrease level by 1 """
             if len(moves) > 17:
                 self.MaxDepth = min(MaxDepth, 3)
@@ -65,6 +65,38 @@ class Player6:
             return (alpha, best_row, best_coloumn)
         else
             return (beta, best_row, best_coloumn)
+
+    def move(self, board, block, old_move, player_flag):
+        """
+        :param board: is the list of lists that represents the 9x9 grid
+        :param block: is a list that represents if a block is won or available to play in
+        :param old_move: is a tuple of integers representing co-ordintates of the last move made
+        :param flag: is player marker. it can be 'x' or 'o'.
+        board[i] can be 'x' or 'o'. block[i] can be 'x' or 'o'
+        Chooses a move based on minimax and alphabeta-pruning algorithm and returns it
+        :rtype tuple: the co-ordinates in 9X9 board
+        """
+        self.isp = 0
+        if old_move == (-1, -1):
+            return (4, 4)
+        startt = time.clock()
+        if player_flag == 'o':
+            flag2 = 'x'
+        else:
+            flag2 = 'o'
+        self.num += 1
+        max_ply = 5
+        self.cntp = block.count(player_flag)
+        self.cnto = block.count(flag2)
+        if self.cnto - self.cntp > 1 or self.num > 25 or self.cntp == 2:
+            self.ply = max_ply
+        temp_board = copy.deepcopy(board)
+        temp_block = copy.deepcopy(block)
+        next_move = self.minimax(temp_board, temp_block, old_move, True, player_flag, flag2, 0, -100000.0, 100000.0, -1,
+                                 -1)
+        elapsed = (time.clock() - startt)
+        # print "Finally :", next_move, "Took:", elapsed
+        return (next_move[1], next_move[2])
 
 
     def get_utility(self, board, block, playerFlag, opFlag):
@@ -120,7 +152,7 @@ class Player6:
         gain = self.get_factor(p, gain)
         gain = self.get_new(positive, negative, gain)
 
-        """p = 0
+        p = 0
         positive = 0
         negative = 0
         for i in range(1, 4):
@@ -131,7 +163,7 @@ class Player6:
                 negative += 1
         gain = self.get_new(positive, negative, gain)
         gain = self.get_factor(p, gain)
-"""
+
         if self.cntp < 2:
             if block[4] == playerFlag:
                 gain += 10
@@ -200,3 +232,83 @@ class Player6:
                 negative += 1
         gain = self.calc(positive, negative, gain)
         return gain
+    def calc(self, cx, co, gain):
+        if cx == 4:
+            gain += 1000
+        if cx == 3:
+            gain += 100
+        if cx == 2:
+            gain += 10
+        if cx == 1:
+            gain += 1
+
+        if co == 4:
+            gain -= 1000
+        if co == 3:
+            gain -= 100
+        if co == 2:
+            gain -= 10
+        if co == 1:
+            gain -= 1
+        return gain
+
+    def get_factor(self, p, gain):
+        if p < 1 and p >= -1:
+            gain += p
+        if p >= 1 and p < 2:
+            val = 1
+            val += (p - 1) * 9
+            gain += val
+        if p >= 2 and p < 3:
+            val = 10
+            val += (p - 2) * 90
+            gain += val
+        if p >= 3 and p < 4:
+            val = 100
+            val += (p - 3) * 900
+            gain += val
+        if p >= 4:
+            val = 1000
+            val += (p - 4) * 9000
+            gain += val
+
+        if p >= -2 and p < -1:
+            val = -1
+            val -= (abs(p) - 1) * 9
+            gain += val
+        if p >= -3 and p < -2:
+            val = -10
+            val -= (abs(p) - 2) * 90
+            gain += val
+        if p < -3 and p >=-4:
+            val = -100
+            val -= (abs(p) - 3) * 900
+            gain += val
+        if p < -4:
+            val = -1000
+            val -= (abs(p) - 4) * 9000
+            gain += val
+        return gain
+
+    def get_new(self, cx, co, gain):
+        
+        if cx == 4:
+            gain += 10000
+        if cx == 3:
+            gain += 1000
+        if cx == 2:
+            gain += 100
+        if cx == 1:
+            gain += 10
+
+        if co == 4:
+            gain -= 10000    
+        if co == 3:
+            gain -= 1000
+        if co == 2:
+            gain -= 100
+        if co == 1:
+            gain -= 10
+
+        return gain
+
