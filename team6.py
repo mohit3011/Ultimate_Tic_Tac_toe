@@ -3,74 +3,76 @@ import sys
 import copy
 import time
 
-class Player6:
+class Player6():
     # Player6 agent to play game.
     def __init__(self):
-        self.MaxDepth
+        self.MaxDepth = 4
         self.block = ['-' for i in range(16)]
         self.num = 0
-        self.cntp = 0
-        self.cnto = 0
+        self.cntp = 0 # how many blocks won by player
+        self.cnto = 0 # how many blocks won by opponent
         pass
         #Rest of the variables will be defined
 
     # Function implementing minmax algorithm with alph-beta pruning.
     def MinMax(self, board, status_blocks, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn):
-    """
-    board :- 16*16 matrix representing game board
-    status_blocks :- bool flags list for all block give their status_blocks
-    old_move :- list[2] contain x,y
-    node_type_maxnode :- bool if 1 reffers to maxnode and 0 to minnode
-    player_sign :- represent x or o of player
-    opponent_sign :- represent x or o of opponent
-    depth :- int represent current depth
-    """
+        """
+        board :- 16*16 matrix representing game board
+        status_blocks :- bool flags list for all block give their status_blocks
+        old_move :- list[2] contain x,y
+        node_type_maxnode :- bool if 1 reffers to maxnode and 0 to minnode
+        player_sign :- represent x or o of player
+        opponent_sign :- represent x or o of opponent
+        depth :- int represent current depth
+        """
 
-    if depth == self.MaxDepth:
-        utility = self.get_utility(board,player_sign,opponent_sign)
-        return (utility, best_row, best_coloumn)
-
-    else:
-        available_moves = block.find_valid_move_cells(old_move)
-
-        NOT SURE ABOUT THIS
-        if len(available_moves) == 0:       ##### No moves left at depth
+        if depth == self.MaxDepth:
             utility = self.get_utility(board,player_sign,opponent_sign)
-            
-            self.MaxDepth = max(depth, 3)
             return (utility, best_row, best_coloumn)
 
-        if depth == 0:     """ If at first level we have around 56 cells then decrease level by 1 """
-            if len(moves) > 17:
-                self.MaxDepth = min(MaxDepth, 3)
+        else:
+            available_moves = board.find_valid_move_cells(old_move)
 
-        for move in available_moves:  # assign player sign whose turn is this
+            #NOT SURE ABOUT THIS
+            if len(available_moves) == 0:       ##### No moves left at depth
+                utility = self.get_utility(board,player_sign,opponent_sign)
+
+                self.MaxDepth = max(depth, 3)
+                return (utility, best_row, best_coloumn)
+
+            if depth == 0:      #If at first level we have around 56 cells then decrease level by 1 """
+                if len(moves) > 17:
+                    self.MaxDepth = min(MaxDepth, 3)
+
+            for move in available_moves:  # assign player sign whose turn is this
+                if node_type_maxnode:
+                    board[move[0]][move[1]] = player_sign
+                else:
+                    board[move[0]][move[1]] = opponent_sign
+
+                utility = MinMax(board, status_block, move, not(node_type_maxnode), player_flag, flag2, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
+
+                if node_type_maxnode:  #Rules for PRUNING
+                    if utility > alpha:
+                        alpha = utility
+                        best_row = move[0]
+                        best_coloumn = move[1]
+                else:  # Rules for PRUNING """
+                    if utility < beta:
+                        beta = utility
+                        best_row = move[0]
+                        best_coloumn = move[1]
+                board[move[0]][move[1]] = '-'
+
+                if alpha > beta: # Rules for PRUNING """
+                    break;
+
             if node_type_maxnode:
-                board[move[0]][move[1]] = player_sign
+                return (alpha, best_row, best_coloumn)
+                print best_row, "      ", best_coloumn , "\n\n\n\n\n\n\n"
             else:
-                board[move[0]][move[1]] = opponent_sign
-
-            utility = MinMax() # agains call MinMax
-
-            if node_type_maxnode: """ Rules for PRUNING """
-                if utility > alpha:
-                    alpha = utility
-                    best_row = move[0]
-                    best_coloumn = move[1]
-            else:   """ Rules for PRUNING """
-                if utility < beta:
-                    beta = utility
-                    best_row = move[0]
-                    best_coloumn = move[1]
-            board[move[0]][move[1]] = '-'
-
-            if alpha > beta: """ Rules for PRUNING """
-                break;
-
-        if node_type_maxnode:
-            return (alpha, best_row, best_coloumn)
-        else
-            return (beta, best_row, best_coloumn)
+                return (beta, best_row, best_coloumn)
+                print best_row, "      ", best_coloumn , "\n\n\n\n\n\n\n"
 
     def move(self, board, old_move, player_flag):
         """
@@ -91,14 +93,14 @@ class Player6:
         else:
             flag2 = 'o'
         self.num += 1
-        max_MaxDepth = 5
+        max_MaxDepth = 4
         self.cntp = self.block.count(player_flag)
         self.cnto = self.block.count(flag2)
         if self.cnto - self.cntp > 1 or self.num > 25 or self.cntp == 2:
             self.MaxDepth = max_MaxDepth
         temp_board = copy.deepcopy(board)
         temp_block = copy.deepcopy(block)
-        next_move = self.minimax(temp_board, temp_block, old_move, True, player_flag, flag2, 0, -100000.0, 100000.0, -1,
+        next_move = self.minimax(temp_board, temp_block, old_move, True, player_flag, flag2, 0, -1000000.0, 1000000.0, -1,
                                  -1)
         elapsed = (time.clock() - startt)
         # print "Finally :", next_move, "Took:", elapsed
@@ -106,19 +108,19 @@ class Player6:
 
 
     def get_utility(self, board, playerFlag, opFlag):
-    """
-    Function to find and return utility of a block 
-    :param board: is the list of lists that represents the 9x9 grid
-    :param block: is a list that represents if a block is won or available to play in
-    :param playerFlag: player marker
-    :param opFlag: Opponent Marker
-    """
+        """
+        Function to find and return utility of a block
+        :param board: is the list of lists that represents the 9x9 grid
+        :param block: is a list that represents if a block is won or available to play in
+        :param playerFlag: player marker
+        :param opFlag: Opponent Marker
+        """
 
         utility_values_block = [0 for i in range(16)]
         for i in range(16):
             utility_values_block[i] = self.calc_utility(board, i, playerFlag)
         gain = 0
-        lim = 100.0
+        lim = 1000.0
         for i in range(16):
             utility_values_block[i] /= lim
         for i in range(4):
@@ -215,7 +217,7 @@ class Player6:
                     neutral += 1
                 elif board[i][j] == playerFlag:
                     positive += 1
-                else:                                   
+                else:
                     negative += 1
             gain = self.calc(positive, negative, gain)
         positive = 0
@@ -297,7 +299,7 @@ class Player6:
         return gain
 
     def get_new(self, cx, co, gain):
-        
+
         if cx == 4:
             gain += 10000
         if cx == 3:
@@ -308,7 +310,7 @@ class Player6:
             gain += 10
 
         if co == 4:
-            gain -= 10000    
+            gain -= 10000
         if co == 3:
             gain -= 1000
         if co == 2:
@@ -317,4 +319,3 @@ class Player6:
             gain -= 10
 
         return gain
-
