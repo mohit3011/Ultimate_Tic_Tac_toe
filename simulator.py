@@ -185,6 +185,7 @@ def gameplay(obj1, obj2):				#game simulator
 		signal.alarm(TIME)
 
 		try:									#try to get player 1's move
+			print "Hello World\n"
 			p1_move = obj1.move(game_board, old_move, fl1)
 		except TimedOutExc:					#timeout error
 #			print e
