@@ -11,6 +11,7 @@ class Player6():
         self.num = 0
         self.cntp = 0 # how many blocks won by player
         self.cnto = 0 # how many blocks won by opponent
+        self.var = 1
         pass
         #Rest of the variables will be defined
 
@@ -25,14 +26,15 @@ class Player6():
         opponent_sign :- represent x or o of opponent
         depth :- int represent current depth
         """
-        print "depth-->", depth
+        #print "depth-->", depth
         if depth == self.MaxDepth:
             utility = self.get_utility(board,player_sign,opponent_sign)
+            #print " Returning utility", utility, best_row, best_coloumn
             return (utility, best_row, best_coloumn)
 
         else:
             available_moves = board.find_valid_move_cells(old_move)
-            print "available moves-->",available_moves
+            #print "available moves-->",available_moves
 
             #NOT SURE ABOUT THIS
             if len(available_moves) == 0:       ##### No moves left at depth
@@ -40,23 +42,23 @@ class Player6():
 
                 self.MaxDepth = max(depth, 3)
                 return (utility, best_row, best_coloumn)
-            print "Minmax ke andar"
+            #print "Minmax ke andar"
 
             if depth == 0:      #If at first level we have around 56 cells then decrease level by 1 """
-                print "depth and moves available is :", depth , len(available_moves)
+                #print "depth and moves available is :", depth , len(available_moves)
                 if len(available_moves) > 17:
                     self.MaxDepth = min(MaxDepth, 3)
             for move in available_moves:  # assign player sign whose turn is this
-                print "move--->",move
+                #print "move--->",move
                 if node_type_maxnode:
                     board.board_status[move[0]][move[1]] = player_sign
                 else:
                     board.board_status[move[0]][move[1]] = opponent_sign
 
-                #print "best row and coloumn:" , best_row , best_coloumn , alpha, beta, depth+1 , not(node_type_maxnode), player_sign, opponent_sign, move , status_blocks, board.board_status
+                ##print "best row and coloumn:" , best_row , best_coloumn , alpha, beta, depth+1 , not(node_type_maxnode), player_sign, opponent_sign, move , status_blocks, board.board_status
                 #utility =0
-                #print "printing:" , utility
-                print node_type_maxnode
+                ##print "#printing:" , utility
+                #print node_type_maxnode
                 if node_type_maxnode==True:
                     node_type_maxnode1 = False
                 else:
@@ -64,24 +66,28 @@ class Player6():
 
                 utility = self.MinMax(board, status_blocks, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
 
-                print node_type_maxnode
+                #print node_type_maxnode
                 if node_type_maxnode:  #Rules for PRUNING
-                    print "Minmax ke deep andar"
+                    #print "Minmax ke deep andar"
                     if utility[0] > alpha:
                         alpha = utility[0]
                         best_row = move[0]
                         best_coloumn = move[1]
+                        #print "Minmax ke deep andar if"
                 else:  # Rules for PRUNING """
                     if utility[0] < beta:
                         beta = utility[0]
                         best_row = move[0]
                         best_coloumn = move[1]
-                        print "Minmax ke deep andar else"
-                board[move[0]][move[1]] = '-'
+                        #print "Minmax ke deep andar else"
+
+                #print "Board check passed!!!!!"
+                board.board_status[move[0]][move[1]] = '-'
+                #print "Board check passed!!!!!"
 
                 if alpha > beta: # Rules for PRUNING """
                     break;
-            print alpha , beta
+            #print alpha , beta
             if node_type_maxnode:
                 return (alpha, best_row, best_coloumn)
             else:
@@ -97,7 +103,7 @@ class Player6():
         Chooses a move based on minimax and alphabeta-pruning algorithm and returns it
         :rtype tuple: the co-ordinates in 9X9 board
         """
-        print "Move me ayaaa ayaa ayaa"
+        #print "Move me ayaaa ayaa ayaa"
         self.isp = 0
         if old_move == (-1, -1):
             return (4, 4)
@@ -112,18 +118,18 @@ class Player6():
         self.cnto = self.block.count(flag2)
         #if self.cnto - self.cntp > 1 or self.num > 25 or self.cntp == 2:
             #self.MaxDepth = max_MaxDepth
-        print "yaha pe ayaaaa"
+        #print "yaha pe ayaaaa"
         temp_board = copy.deepcopy(board)
-        print "bich me ayaayaya"
+        #print "bich me ayaayaya"
         temp_block = copy.deepcopy(self.block)
-        print "minmax me ayaaaaa!"
+        #print "minmax me ayaaaaa!"
         next_move = self.MinMax(temp_board, temp_block, old_move, True, player_flag, flag2, 0, -1000000.0, 1000000.0, -1,
                                  -1)
-        print "minmax se bahar ayayayyayayay\n\n"
+        #print "minmax se bahar ayayayyayayay\n\n"
         elapsed = (time.clock() - startt)
-        # print "Finally :", next_move, "Took:", elapsed
-        #print " Lets see kaha huga   " ,next_move[0], "      ", next_move[1] , "\n\n\n\n\n\n\n"
-        print "printing next move: " , next_move[1] , next_move[2]
+        # #print "Finally :", next_move, "Took:", elapsed
+        ##print " Lets see kaha huga   " ,next_move[0], "      ", next_move[1] , "\n\n\n\n\n\n\n"
+        #print "#printing next move: " , next_move[1] , next_move[2]
         return (next_move[1], next_move[2])
 
 
@@ -153,6 +159,8 @@ class Player6():
                     positive += 1
                 elif self.block[j * 4 + i] == opFlag:
                     negative += 1
+            #print "\n\n\nFound utility at cell level." , self.var
+            self.var+=1;
             gain = self.get_factor(p, gain)
             gain = self.get_new(positive, negative, gain)
         for j in range(4):
@@ -165,6 +173,8 @@ class Player6():
                     positive += 1
                 elif self.block[j * 4 + i] == opFlag:
                     negative += 1
+            #print "\n\n\nFound utility at cell level." , self.var
+            self.var+=1;
             gain = self.get_factor(p, gain)
             gain = self.get_new(positive, negative, gain)
 
@@ -177,6 +187,9 @@ class Player6():
                 positive += 1
             elif self.block[i * 4 + i] == opFlag:
                 negative += 1
+
+        #print "\n\n\nFound utility at cell level." , self.var
+        self.var+=1;
         gain = self.get_factor(p, gain)
         gain = self.get_new(positive, negative, gain)
 
@@ -189,6 +202,8 @@ class Player6():
                 positive += 1
             elif self.block[i * 2] == opFlag:
                 negative += 1
+        #print "\n\n\nFound utility at cell level." , self.var
+        self.var+=1;
         gain = self.get_new(positive, negative, gain)
         gain = self.get_factor(p, gain)
 
@@ -205,6 +220,7 @@ class Player6():
             gain -= 20
         elif cnt1 < self.cntp and cnt2 > self.cnto:
             gain -= 50
+        #print "Gain Returned by Get utility is: ", gain
         return gain
 
 
@@ -215,7 +231,7 @@ class Player6():
         starty = boardno % 4
         starty *= 4
         startx *= 4
-        print "Starting x",startx,"Starting y",starty
+        #print "Starting x",startx,"Starting y",starty
         for i in range(startx, startx + 4):
             positive = 0
             negative = 0
@@ -317,6 +333,7 @@ class Player6():
             val = -1000
             val -= (abs(p) - 4) * 9000
             gain += val
+        #print "Gain Returned by Get Factor is: ", gain
         return gain
 
     def get_new(self, cx, co, gain):
@@ -338,5 +355,5 @@ class Player6():
             gain -= 100
         if co == 1:
             gain -= 10
-
+        #print "Gain Returned by Get New is: ", gain
         return gain
