@@ -7,7 +7,7 @@ class Player6():
     # Player6 agent to play game.
     def __init__(self):
         self.MaxDepth = 4
-        self.block = ['-' for i in range(16)]
+        #self.block = ['-' for i in range(16)]
         self.num = 0
         self.cntp = 0 # how many blocks won by player
         self.cnto = 0 # how many blocks won by opponent
@@ -16,7 +16,7 @@ class Player6():
         #Rest of the variables will be defined
 
     # Function implementing minmax algorithm with alph-beta pruning.
-    def MinMax(self, board, status_blocks, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn):
+    def MinMax(self, board, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn):
         """
         board :- 16*16 matrix representing game board
         status_blocks :- bool flags list for all block give their status_blocks
@@ -28,7 +28,7 @@ class Player6():
         """
         #print "depth-->", depth
         if depth == self.MaxDepth:
-            utility = self.get_utility(board,player_sign,opponent_sign)
+            utility = self.get_utility(board, player_sign, opponent_sign)
             #print " Returning utility", utility, best_row, best_coloumn
             return (utility, best_row, best_coloumn)
 
@@ -38,33 +38,36 @@ class Player6():
 
             #NOT SURE ABOUT THIS
             if len(available_moves) == 0:       ##### No moves left at depth
-                utility = self.get_utility(board,player_sign,opponent_sign)
-
-                self.MaxDepth = max(depth, 3)
+                utility = self.get_utility(board, player_sign, opponent_sign)
+                self.MaxDepth = max(depth, 2)
                 return (utility, best_row, best_coloumn)
             #print "Minmax ke andar"
 
             if depth == 0:      #If at first level we have around 56 cells then decrease level by 1 """
                 #print "depth and moves available is :", depth , len(available_moves)
                 if len(available_moves) > 17:
-                    self.MaxDepth = min(MaxDepth, 3)
+                    self.MaxDepth = min(MaxDepth, 2)
+
             for move in available_moves:  # assign player sign whose turn is this
                 #print "move--->",move
+                temp_board = board
+                """
                 if node_type_maxnode:
                     board.board_status[move[0]][move[1]] = player_sign
                 else:
                     board.board_status[move[0]][move[1]] = opponent_sign
+                """
+                sign = player_sign
+                if not node_type_maxnode:   sign = opponent_sign
 
-                ##print "best row and coloumn:" , best_row , best_coloumn , alpha, beta, depth+1 , not(node_type_maxnode), player_sign, opponent_sign, move , status_blocks, board.board_status
-                #utility =0
-                ##print "#printing:" , utility
-                #print node_type_maxnode
+                board.update(old_move, move, sign)
+
                 if node_type_maxnode==True:
                     node_type_maxnode1 = False
                 else:
                     node_type_maxnode1 = True
 
-                utility = self.MinMax(board, status_blocks, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
+                utility = self.MinMax(board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
 
                 #print node_type_maxnode
                 if node_type_maxnode:  #Rules for PRUNING
@@ -114,16 +117,16 @@ class Player6():
             flag2 = 'o'
         self.num += 1
         max_MaxDepth = 4
-        self.cntp = self.block.count(player_flag)
-        self.cnto = self.block.count(flag2)
+        self.cntp = sum(blocks.count(player_flag) for blocks in board.block_status)
+        self.cnto = sum(blocks.count(flag2) for blocks in board.block_status)
         #if self.cnto - self.cntp > 1 or self.num > 25 or self.cntp == 2:
             #self.MaxDepth = max_MaxDepth
         #print "yaha pe ayaaaa"
         temp_board = copy.deepcopy(board)
         #print "bich me ayaayaya"
-        temp_block = copy.deepcopy(self.block)
+        #temp_block = copy.deepcopy(board.block_status)
         #print "minmax me ayaaaaa!"
-        next_move = self.MinMax(temp_board, temp_block, old_move, True, player_flag, flag2, 0, -1000000.0, 1000000.0, -1,
+        next_move = self.MinMax(temp_board, old_move, True, player_flag, flag2, 0, -1000000.0, 1000000.0, -1,
                                  -1)
         #print "minmax se bahar ayayayyayayay\n\n"
         elapsed = (time.clock() - startt)
@@ -155,12 +158,10 @@ class Player6():
             negative = 0
             for j in range(4):
                 p += utility_values_block[j * 4 + i]
-                if self.block[j * 4 + i] == playerFlag:
+                if board.block_status[j][i] == playerFlag:
                     positive += 1
-                elif self.block[j * 4 + i] == opFlag:
+                elif board.block_status[j][i] == opFlag:
                     negative += 1
-            #print "\n\n\nFound utility at cell level." , self.var
-            self.var+=1;
             gain = self.get_factor(p, gain)
             gain = self.get_new(positive, negative, gain)
         for j in range(4):
@@ -169,9 +170,9 @@ class Player6():
             negative = 0
             for i in range(4):
                 p += utility_values_block[j * 3 + i]
-                if self.block[j * 4 + i] == playerFlag:
+                if board.block_status[j][i] == playerFlag:
                     positive += 1
-                elif self.block[j * 4 + i] == opFlag:
+                elif board.block_status[j][i] == opFlag:
                     negative += 1
             #print "\n\n\nFound utility at cell level." , self.var
             self.var+=1;
@@ -183,37 +184,36 @@ class Player6():
         negative = 0
         for i in range(4):
             p += utility_values_block[4 * i + i]
-            if self.block[i * 4 + i] == playerFlag:
+            if board.block_status[i][i] == playerFlag:
                 positive += 1
-            elif self.block[i * 4 + i] == opFlag:
+            elif board.block_status[i][i] == opFlag:
                 negative += 1
 
-        #print "\n\n\nFound utility at cell level." , self.var
-        self.var+=1;
         gain = self.get_factor(p, gain)
         gain = self.get_new(positive, negative, gain)
 
         p = 0
         positive = 0
         negative = 0
-        for i in range(1, 4):
-            p += utility_values_block[2 * i]
-            if self.block[i * 2] == playerFlag:
+        for i in range(4):
+            p += utility_values_block[(4 * i) + 3 -i]
+            if board.block_status[i][3-i] == playerFlag:
                 positive += 1
-            elif self.block[i * 2] == opFlag:
+            elif board.block_status[i][3-i] == opFlag:
                 negative += 1
-        #print "\n\n\nFound utility at cell level." , self.var
-        self.var+=1;
+
         gain = self.get_new(positive, negative, gain)
         gain = self.get_factor(p, gain)
-
+        """
         if self.cntp < 2:
             if self.block[4] == playerFlag:
                 gain += 10
             elif self.block[4] != '-':
                 gain -= 10
-        cnt1 = self.block.count(playerFlag)
-        cnt2 = self.block.count(opFlag)
+        """
+        #print " calc for all calculated!!!! " , board.block_status, sum(blocks.count(playerFlag) for blocks in board.block_status)
+        cnt1 = sum(blocks.count(playerFlag) for blocks in board.block_status)
+        cnt2 = sum(blocks.count(opFlag) for blocks in board.block_status)
         if self.cntp < cnt1 and cnt2 == self.cnto:
             gain += 50
         elif cnt1 > self.cntp and (cnt1 - self.cntp) < (cnt2 - self.cnto):
