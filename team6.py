@@ -25,13 +25,14 @@ class Player6():
         opponent_sign :- represent x or o of opponent
         depth :- int represent current depth
         """
-        print "phir se ayayayayay", depth , status_blocks
+        print "depth-->", depth
         if depth == self.MaxDepth:
             utility = self.get_utility(board,player_sign,opponent_sign)
             return (utility, best_row, best_coloumn)
 
         else:
             available_moves = board.find_valid_move_cells(old_move)
+            print "available moves-->",available_moves
 
             #NOT SURE ABOUT THIS
             if len(available_moves) == 0:       ##### No moves left at depth
@@ -46,19 +47,22 @@ class Player6():
                 if len(available_moves) > 17:
                     self.MaxDepth = min(MaxDepth, 3)
             for move in available_moves:  # assign player sign whose turn is this
+                print "move--->",move
                 if node_type_maxnode:
                     board.board_status[move[0]][move[1]] = player_sign
                 else:
                     board.board_status[move[0]][move[1]] = opponent_sign
 
-                print "Printing status_block: " , status_blocks
                 #print "best row and coloumn:" , best_row , best_coloumn , alpha, beta, depth+1 , not(node_type_maxnode), player_sign, opponent_sign, move , status_blocks, board.board_status
                 #utility =0
                 #print "printing:" , utility
                 print node_type_maxnode
-                node_type_maxnode1 = node_type_maxnode
+                if node_type_maxnode==True:
+                    node_type_maxnode1 = False
+                else:
+                    node_type_maxnode1 = True
 
-                utility = self.MinMax(board, status_blocks, move, not(node_type_maxnode1), player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
+                utility = self.MinMax(board, status_blocks, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
 
                 print node_type_maxnode
                 if node_type_maxnode:  #Rules for PRUNING
@@ -96,7 +100,6 @@ class Player6():
         print "Move me ayaaa ayaa ayaa"
         self.isp = 0
         if old_move == (-1, -1):
-            print "Return 4,4"
             return (4, 4)
         startt = time.clock()
         if player_flag == 'o':
@@ -132,7 +135,6 @@ class Player6():
         :param playerFlag: player marker
         :param opFlag: Opponent Marker
         """
-        return random.randrange(-101,101)
 
         utility_values_block = [0 for i in range(16)]
         for i in range(16):
@@ -213,14 +215,15 @@ class Player6():
         starty = boardno % 4
         starty *= 4
         startx *= 4
+        print "Starting x",startx,"Starting y",starty
         for i in range(startx, startx + 4):
             positive = 0
             negative = 0
             neutral = 0
             for j in range(starty, starty + 4):
-                if board[i][j] == '-':
+                if board.board_status[i][j] == '-':
                     neutral += 1
-                elif board[i][j] == playerFlag:
+                elif board.board_status[i][j] == playerFlag:
                     positive += 1
                 else:
                     negative += 1
@@ -231,9 +234,9 @@ class Player6():
             negative = 0
             neutral = 0
             for i in range(startx, startx + 4):
-                if board[i][j] == '-':
+                if board.board_status[i][j] == '-':
                     neutral += 1
-                elif board[i][j] == playerFlag:
+                elif board.board_status[i][j] == playerFlag:
                     positive += 1
                 else:
                     negative += 1
@@ -242,17 +245,17 @@ class Player6():
         neutral = 0
         negative = 0
         for i in range(0, 4):
-            if board[startx + i][starty + i] == playerFlag:
+            if board.board_status[startx + i][starty + i] == playerFlag:
                 positive += 1
-            elif board[startx + i][starty + i] == '-':
+            elif board.board_status[startx + i][starty + i] == '-':
                 neutral += 1
             else:
                 negative += 1
         gain = self.calc(positive, negative, gain)
         for i in range(0, 4):
-            if board[startx + i][starty + 2 - i] == playerFlag:
+            if board.board_status[startx + i][starty + 2 - i] == playerFlag:
                 positive += 1
-            elif board[startx + i][starty + 2 - i] == '-':
+            elif board.board_status[startx + i][starty + 2 - i] == '-':
                 neutral += 1
             else:
                 negative += 1
