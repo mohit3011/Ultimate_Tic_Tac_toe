@@ -6,7 +6,7 @@ import time
 class Player6():
     # Player6 agent to play game.
     def __init__(self):
-        self.MaxDepth = 4
+        self.MaxDepth = 3
         #self.block = ['-' for i in range(16)]
         self.num = 0
         self.cntp = 0 # how many blocks won by player
@@ -39,24 +39,19 @@ class Player6():
             #NOT SURE ABOUT THIS
             if len(available_moves) == 0:       ##### No moves left at depth
                 utility = self.get_utility(board, player_sign, opponent_sign)
-                self.MaxDepth = max(depth, 2)
+                self.MaxDepth = max(depth, 4)
                 return (utility, best_row, best_coloumn)
             #print "Minmax ke andar"
 
             if depth == 0:      #If at first level we have around 56 cells then decrease level by 1 """
                 #print "depth and moves available is :", depth , len(available_moves)
                 if len(available_moves) > 17:
-                    self.MaxDepth = min(MaxDepth, 2)
+                    self.MaxDepth = min(MaxDepth, 3)
 
             for move in available_moves:  # assign player sign whose turn is this
                 #print "move--->",move
                 temp_board = board
-                """
-                if node_type_maxnode:
-                    board.board_status[move[0]][move[1]] = player_sign
-                else:
-                    board.board_status[move[0]][move[1]] = opponent_sign
-                """
+
                 sign = player_sign
                 if not node_type_maxnode:   sign = opponent_sign
 
@@ -69,15 +64,17 @@ class Player6():
 
                 utility = self.MinMax(board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
 
+                #print "utility-->"," ",utility
                 #print node_type_maxnode
                 if node_type_maxnode:  #Rules for PRUNING
-                    #print "Minmax ke deep andar"
+                    #print "move-->",move,"maxnode ","Utility-->",utility[0]," ","alpha-->"," ",alpha
                     if utility[0] > alpha:
                         alpha = utility[0]
                         best_row = move[0]
                         best_coloumn = move[1]
                         #print "Minmax ke deep andar if"
                 else:  # Rules for PRUNING """
+                    #print "move-->",move," ","minnode"," ","Utility-->",utility[0]," ","beta-->"," ",beta
                     if utility[0] < beta:
                         beta = utility[0]
                         best_row = move[0]
@@ -106,8 +103,6 @@ class Player6():
         Chooses a move based on minimax and alphabeta-pruning algorithm and returns it
         :rtype tuple: the co-ordinates in 9X9 board
         """
-        #print "Move me ayaaa ayaa ayaa"
-        self.isp = 0
         if old_move == (-1, -1):
             return (4, 4)
         startt = time.clock()
@@ -124,7 +119,7 @@ class Player6():
         #print "yaha pe ayaaaa"
         temp_board = copy.deepcopy(board)
         #print "bich me ayaayaya"
-        #temp_block = copy.deepcopy(board.block_status)
+        temp_block = copy.deepcopy(board.block_status)
         #print "minmax me ayaaaaa!"
         next_move = self.MinMax(temp_board, old_move, True, player_flag, flag2, 0, -1000000.0, 1000000.0, -1,
                                  -1)

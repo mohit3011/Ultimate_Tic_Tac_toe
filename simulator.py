@@ -67,6 +67,7 @@ class Board:
 		allowed_block = [old_move[0]%4, old_move[1]%4]
 		#checks if the move is a free move or not based on the rules
 
+		
 		if old_move != (-1,-1) and self.block_status[allowed_block[0]][allowed_block[1]] == '-':
 			for i in range(4*allowed_block[0], 4*allowed_block[0]+4):
 				for j in range(4*allowed_block[1], 4*allowed_block[1]+4):
@@ -130,6 +131,7 @@ class Board:
 	def update(self, old_move, new_move, ply):
 		#updating the game board and block status as per the move that has been passed in the arguements
 		if(self.check_valid_move(old_move, new_move)) == False:
+			#print "valid move chor hai"
 			return 'UNSUCCESSFUL'
 		self.board_status[new_move[0]][new_move[1]] = ply
 
@@ -194,7 +196,7 @@ def gameplay(obj1, obj2):				#game simulator
 			break
 		except Exception as e:
 			WINNER = 'P2'
-			MESSAGE = 'INVALID MOVE'
+			MESSAGE = 'INVALID MOVE exception'
 			pts2 = 16
 			break
 		signal.alarm(0)
@@ -207,7 +209,7 @@ def gameplay(obj1, obj2):				#game simulator
 			break
 		if game_board.update(old_move, p1_move, fl1) == 'UNSUCCESSFUL':
 			WINNER = 'P2'
-			MESSAGE = 'INVALID MOVE'
+			MESSAGE = 'INVALID MOVE Unsucces'
 			pts2 = 16
 			break
 
