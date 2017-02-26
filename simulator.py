@@ -188,6 +188,7 @@ def gameplay(obj1, obj2):				#game simulator
 
 		try:									#try to get player 1's move
 			p1_move = obj1.move(game_board, old_move, fl1)
+
 		except TimedOutExc:					#timeout error
 #			print e
 			WINNER = 'P2'
@@ -195,9 +196,12 @@ def gameplay(obj1, obj2):				#game simulator
 			pts2 = 16
 			break
 		except Exception as e:
+
 			WINNER = 'P2'
-			MESSAGE = 'INVALID MOVE exception'
+			print e
+			MESSAGE = 'INVALID MOVE'
 			pts2 = 16
+			print "returned move: ", p1_move
 			break
 		signal.alarm(0)
 
@@ -209,7 +213,7 @@ def gameplay(obj1, obj2):				#game simulator
 			break
 		if game_board.update(old_move, p1_move, fl1) == 'UNSUCCESSFUL':
 			WINNER = 'P2'
-			MESSAGE = 'INVALID MOVE Unsucces'
+			MESSAGE = 'INVALID MOVE'
 			pts2 = 16
 			break
 

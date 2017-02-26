@@ -46,7 +46,7 @@ class Player6():
             if depth == 0:      #If at first level we have around 56 cells then decrease level by 1 """
                 #print "depth and moves available is :", depth , len(available_moves)
                 if len(available_moves) > 17:
-                    self.MaxDepth = min(MaxDepth, 3)
+                    self.MaxDepth = min(self.MaxDepth, 3)
 
             for move in available_moves:  # assign player sign whose turn is this
                 #print "move--->",move
@@ -62,6 +62,7 @@ class Player6():
                 else:
                     node_type_maxnode1 = True
 
+                #if len(available_moves)>17 and depth!=0:
                 utility = self.MinMax(board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
 
                 #print "utility-->"," ",utility
