@@ -83,7 +83,7 @@ class Player6():
                         #print "Minmax ke deep andar else"
 
                 #print "Board check passed!!!!!"
-                board.board_status[move[0]][move[1]] = '-'
+                #board.board_status[move[0]][move[1]] = '-'
                 #print "Board check passed!!!!!"
 
                 if alpha > beta: # Rules for PRUNING """
