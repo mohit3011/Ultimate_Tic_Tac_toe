@@ -4,6 +4,8 @@ import signal
 import time
 import copy
 from team6 import *
+from team20 import *
+
 class TimedOutExc(Exception):
 	pass
 
@@ -67,7 +69,7 @@ class Board:
 		allowed_block = [old_move[0]%4, old_move[1]%4]
 		#checks if the move is a free move or not based on the rules
 
-		
+
 		if old_move != (-1,-1) and self.block_status[allowed_block[0]][allowed_block[1]] == '-':
 			for i in range(4*allowed_block[0], 4*allowed_block[0]+4):
 				for j in range(4*allowed_block[1], 4*allowed_block[1]+4):
@@ -189,6 +191,8 @@ def gameplay(obj1, obj2):				#game simulator
 		try:									#try to get player 1's move
 			p1_move = obj1.move(game_board, old_move, fl1)
 
+			print "(" , p1_move[0] , p1_move[1] , ")\n"
+
 		except TimedOutExc:					#timeout error
 #			print e
 			WINNER = 'P2'
@@ -236,15 +240,18 @@ def gameplay(obj1, obj2):				#game simulator
 		temp_board_status = copy.deepcopy(game_board.board_status)
 		temp_block_status = copy.deepcopy(game_board.block_status)
 		signal.alarm(TIME)
+		#a=raw_input()
 
 		try:
 			p2_move = obj2.move(game_board, old_move, fl2)
+			print "(" , p2_move[0] , p2_move[1] , ")\n"
 		except TimedOutExc:
 			WINNER = 'P1'
 			MESSAGE = 'TIME OUT'
 			pts1 = 16
 			break
 		except Exception as e:
+			print e
 			WINNER = 'P1'
 			MESSAGE = 'INVALID MOVE'
 			pts1 = 16
@@ -312,8 +319,8 @@ if __name__ == '__main__':
 	obj2 = ''
 	option = sys.argv[1]
 	if option == '1':
-		obj1 = Player6()
-		obj2 = Random_Player()
+		obj2 = Player6()
+		obj1 = Player20()
 
 	elif option == '2':
 		obj1 = Random_Player()

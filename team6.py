@@ -11,7 +11,8 @@ class Player6():
         self.num = 0
         self.cntp = 0 # how many blocks won by player
         self.cnto = 0 # how many blocks won by opponent
-        self.var = 1
+        #self.GoldenMoves = [[0,0], [0,3], [3,0], [3,3], [1,1], [2,2], [1,2], [2,1]]
+        self.ourFlag = None
         pass
         #Rest of the variables will be defined
 
@@ -26,7 +27,7 @@ class Player6():
         opponent_sign :- represent x or o of opponent
         depth :- int represent current depth
         """
-        #print "depth-->", depth
+        #print depth
         if depth == self.MaxDepth:
             utility = self.get_utility(board, player_sign, opponent_sign)
             #print " Returning utility", utility, best_row, best_coloumn
@@ -34,28 +35,30 @@ class Player6():
 
         else:
             available_moves = board.find_valid_move_cells(old_move)
+            #random.shuffle(available_moves)
             #print "available moves-->",available_moves
 
             #NOT SURE ABOUT THIS
+
             if len(available_moves) == 0:       ##### No moves left at depth
                 utility = self.get_utility(board, player_sign, opponent_sign)
-                self.MaxDepth = max(depth, 4)
+                #self.MaxDepth = max(depth, 4)
                 return (utility, best_row, best_coloumn)
             #print "Minmax ke andar"
 
-            if depth == 0:      #If at first level we have around 56 cells then decrease level by 1 """
+            if depth == 0:      #If at first level we have around 56 cells then decrease level by 1
                 #print "depth and moves available is :", depth , len(available_moves)
                 if len(available_moves) > 17:
-                    self.MaxDepth = min(self.MaxDepth, 3)
+                    self.MaxDepth = min(self.MaxDepth, 2)
 
             for move in available_moves:  # assign player sign whose turn is this
                 #print "move--->",move
-                temp_board = board
+                temp_board = copy.deepcopy(board)
 
                 sign = player_sign
                 if not node_type_maxnode:   sign = opponent_sign
 
-                board.update(old_move, move, sign)
+                temp_board.update(old_move, move, sign)
 
                 if node_type_maxnode==True:
                     node_type_maxnode1 = False
@@ -63,7 +66,7 @@ class Player6():
                     node_type_maxnode1 = True
 
                 #if len(available_moves)>17 and depth!=0:
-                utility = self.MinMax(board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
+                utility = self.MinMax(temp_board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
 
                 #print "utility-->"," ",utility
                 #print node_type_maxnode
@@ -115,6 +118,8 @@ class Player6():
         max_MaxDepth = 4
         self.cntp = sum(blocks.count(player_flag) for blocks in board.block_status)
         self.cnto = sum(blocks.count(flag2) for blocks in board.block_status)
+
+        self.ourFlag = player_flag
         #if self.cnto - self.cntp > 1 or self.num > 25 or self.cntp == 2:
             #self.MaxDepth = max_MaxDepth
         #print "yaha pe ayaaaa"
@@ -122,7 +127,7 @@ class Player6():
         #print "bich me ayaayaya"
         temp_block = copy.deepcopy(board.block_status)
         #print "minmax me ayaaaaa!"
-        next_move = self.MinMax(temp_board, old_move, True, player_flag, flag2, 0, -1000000.0, 1000000.0, -1,
+        next_move = self.MinMax(temp_board, old_move, True, player_flag, flag2, 0, -100000000000000.0, 10000000000000.0, -1,
                                  -1)
         #print "minmax se bahar ayayayyayayay\n\n"
         elapsed = (time.clock() - startt)
@@ -165,13 +170,12 @@ class Player6():
             positive = 0
             negative = 0
             for i in range(4):
-                p += utility_values_block[j * 3 + i]
+                p += utility_values_block[j * 4 + i]
                 if board.block_status[j][i] == playerFlag:
                     positive += 1
                 elif board.block_status[j][i] == opFlag:
                     negative += 1
             #print "\n\n\nFound utility at cell level." , self.var
-            self.var+=1;
             gain = self.get_factor(p, gain)
             gain = self.get_new(positive, negative, gain)
 
@@ -207,6 +211,23 @@ class Player6():
             elif self.block[4] != '-':
                 gain -= 10
         """
+	"""
+        if len(self.GoldenMoves) > 4:
+            for point in self.GoldenMoves:
+                if board.block_status[point[0]][point[1]] == self.ourFlag:
+                    gain += 100
+                    self.GoldenMoves.remove(point)
+                    if point in [[0,3], [3,0], [1,2], [2,1]]:
+                        if [1,1] in self.GoldenMoves:
+                            self.GoldenMoves.remove([1,1])
+                        if [2,2] in self.GoldenMoves:
+                            self.GoldenMoves.remove([2,2])
+                    if point in [[0,0], [3,3], [1,1], [2,2]]:
+                        if [1,2] in self.GoldenMoves:
+                            self.GoldenMoves.remove([1,2])
+                        if [2,1] in self.GoldenMoves:
+                            self.GoldenMoves.remove([2,1])
+	"""
         #print " calc for all calculated!!!! " , board.block_status, sum(blocks.count(playerFlag) for blocks in board.block_status)
         cnt1 = sum(blocks.count(playerFlag) for blocks in board.block_status)
         cnt2 = sum(blocks.count(opFlag) for blocks in board.block_status)
@@ -265,9 +286,9 @@ class Player6():
                 negative += 1
         gain = self.calc(positive, negative, gain)
         for i in range(0, 4):
-            if board.board_status[startx + i][starty + 2 - i] == playerFlag:
+            if board.board_status[startx + i][starty + 3 - i] == playerFlag:
                 positive += 1
-            elif board.board_status[startx + i][starty + 2 - i] == '-':
+            elif board.board_status[startx + i][starty + 3 - i] == '-':
                 neutral += 1
             else:
                 negative += 1
