@@ -17,7 +17,7 @@ class Player6():
         #Rest of the variables will be defined
 
     # Function implementing minmax algorithm with alph-beta pruning.
-    def MinMax(self, board, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn, gmoves):
+    def MinMax(self, board, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn, gmoves, itr_max_depth,st_time):
         """
         board :- 16*16 matrix representing game board
         status_blocks :- bool flags list for all block give their status_blocks
@@ -28,7 +28,13 @@ class Player6():
         depth :- int represent current depth
         """
         #print depth
-        if depth == self.MaxDepth:
+
+        if (time.time() - st_time)>14.7:
+            utility = 0
+            return (utility, best_row, best_coloumn)
+
+        
+        if depth == itr_max_depth:
             utility = self.get_utility(board, player_sign, opponent_sign, gmoves)
             #print " Returning utility", utility, best_row, best_coloumn
             return (utility, best_row, best_coloumn)
@@ -53,6 +59,8 @@ class Player6():
 
             for move in available_moves:  # assign player sign whose turn is this
                 #print "move--->",move
+               
+
                 temp_board = copy.deepcopy(board)
                 temp_GM = copy.deepcopy(gmoves)
 
@@ -68,7 +76,7 @@ class Player6():
                     node_type_maxnode1 = True
 
                 #if len(available_moves)>17 and depth!=0:
-                utility = self.MinMax(temp_board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn, temp_GM) # agains call MinMax
+                utility = self.MinMax(temp_board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn, temp_GM,itr_max_depth,st_time) # agains call MinMax
 
                 #print "utility-->"," ",utility
                 #print node_type_maxnode
@@ -93,6 +101,9 @@ class Player6():
 
                 if alpha > beta: # Rules for PRUNING """
                     break;
+
+                if (time.time() - st_time)>14:
+                    return (utility, best_row, best_coloumn)
             #print alpha , beta
             if node_type_maxnode:
                 return (alpha, best_row, best_coloumn)
@@ -125,7 +136,7 @@ class Player6():
 
         if old_move == (-1, -1):
             return (4, 4)
-        startt = time.clock()
+        startt = time.time()
         if player_flag == 'o':
             flag2 = 'x'
         else:
@@ -145,13 +156,21 @@ class Player6():
 
         temp_GM = copy.deepcopy(self.GoldenMoves)
         #print "minmax me ayaaaaa!"
-        next_move = self.MinMax(temp_board, old_move, True, player_flag, flag2, 0, -100000000000000.0, 10000000000000.0, -1,
-                                 -1, temp_GM)
-        #print "minmax se bahar ayayayyayayay\n\n"
-        elapsed = (time.clock() - startt)
+        elapsed = (time.time() - startt)
+        temp_move = (0,0,0)
+        itr_max_depth = 2
+        while(elapsed<14):
+            #print itr_max_depth
+            next_move = temp_move
+            temp_move = self.MinMax(temp_board, old_move, True, player_flag, flag2, 0, -100000000000000.0, 10000000000000.0, -1,
+                                     -1, temp_GM , itr_max_depth,startt)
+            #print "minmax se bahar ayayayyayayay\n\n"
+            itr_max_depth += 1
+            elapsed = (time.time() - startt)
         # #print "Finally :", next_move, "Took:", elapsed
         ##print " Lets see kaha huga   " ,next_move[0], "      ", next_move[1] , "\n\n\n\n\n\n\n"
         #print "#printing next move: " , next_move[1] , next_move[2]
+        #print next_move
         return (next_move[1], next_move[2])
 
 

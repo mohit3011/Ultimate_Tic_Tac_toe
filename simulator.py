@@ -323,7 +323,7 @@ if __name__ == '__main__':
 	option = sys.argv[1]
 	if option == '1':
 		obj1 = Player6()
-		obj2 = player4()
+		obj2 = Random_Player()
 
 	elif option == '2':
 		obj1 = Random_Player()
