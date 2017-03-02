@@ -11,13 +11,13 @@ class Player6():
         self.num = 0
         self.cntp = 0 # how many blocks won by player
         self.cnto = 0 # how many blocks won by opponent
-        #self.GoldenMoves = [[0,0], [0,3], [3,0], [3,3], [1,1], [2,2], [1,2], [2,1]]
+        self.GoldenMoves = [[0,0], [0,3], [3,0], [3,3], [1,1], [2,2], [1,2], [2,1]]
         self.ourFlag = None
         pass
         #Rest of the variables will be defined
 
     # Function implementing minmax algorithm with alph-beta pruning.
-    def MinMax(self, board, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn):
+    def MinMax(self, board, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn, gmoves):
         """
         board :- 16*16 matrix representing game board
         status_blocks :- bool flags list for all block give their status_blocks
@@ -29,7 +29,7 @@ class Player6():
         """
         #print depth
         if depth == self.MaxDepth:
-            utility = self.get_utility(board, player_sign, opponent_sign)
+            utility = self.get_utility(board, player_sign, opponent_sign, gmoves)
             #print " Returning utility", utility, best_row, best_coloumn
             return (utility, best_row, best_coloumn)
 
@@ -41,7 +41,7 @@ class Player6():
             #NOT SURE ABOUT THIS
 
             if len(available_moves) == 0:       ##### No moves left at depth
-                utility = self.get_utility(board, player_sign, opponent_sign)
+                utility = self.get_utility(board, player_sign, opponent_sign, gmoves)
                 #self.MaxDepth = max(depth, 4)
                 return (utility, best_row, best_coloumn)
             #print "Minmax ke andar"
@@ -54,6 +54,8 @@ class Player6():
             for move in available_moves:  # assign player sign whose turn is this
                 #print "move--->",move
                 temp_board = copy.deepcopy(board)
+                temp_GM = copy.deepcopy(gmoves)
+
 
                 sign = player_sign
                 if not node_type_maxnode:   sign = opponent_sign
@@ -66,7 +68,7 @@ class Player6():
                     node_type_maxnode1 = True
 
                 #if len(available_moves)>17 and depth!=0:
-                utility = self.MinMax(temp_board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn) # agains call MinMax
+                utility = self.MinMax(temp_board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn, temp_GM) # agains call MinMax
 
                 #print "utility-->"," ",utility
                 #print node_type_maxnode
@@ -107,6 +109,20 @@ class Player6():
         Chooses a move based on minimax and alphabeta-pruning algorithm and returns it
         :rtype tuple: the co-ordinates in 9X9 board
         """
+        for point in self.GoldenMoves:
+            if board.block_status[point[0]][point[1]] == self.ourFlag:
+                self.GoldenMoves.remove(point)
+                if point in [[0,3], [3,0], [1,2], [2,1]]:
+                    if [1,1] in self.GoldenMoves:
+                        self.GoldenMoves.remove([1,1])
+                    if [2,2] in self.GoldenMoves:
+                        self.GoldenMoves.remove([2,2])
+                if point in [[0,0], [3,3], [1,1], [2,2]]:
+                    if [1,2] in self.GoldenMoves:
+                        self.GoldenMoves.remove([1,2])
+                    if [2,1] in self.GoldenMoves:
+                        self.GoldenMoves.remove([2,1])
+
         if old_move == (-1, -1):
             return (4, 4)
         startt = time.clock()
@@ -126,9 +142,11 @@ class Player6():
         temp_board = copy.deepcopy(board)
         #print "bich me ayaayaya"
         temp_block = copy.deepcopy(board.block_status)
+
+        temp_GM = copy.deepcopy(self.GoldenMoves)
         #print "minmax me ayaaaaa!"
         next_move = self.MinMax(temp_board, old_move, True, player_flag, flag2, 0, -100000000000000.0, 10000000000000.0, -1,
-                                 -1)
+                                 -1, temp_GM)
         #print "minmax se bahar ayayayyayayay\n\n"
         elapsed = (time.clock() - startt)
         # #print "Finally :", next_move, "Took:", elapsed
@@ -137,7 +155,7 @@ class Player6():
         return (next_move[1], next_move[2])
 
 
-    def get_utility(self, board, playerFlag, opFlag):
+    def get_utility(self, board, playerFlag, opFlag, temp_GM):
         """
         Function to find and return utility of a block
         :param board: is the list of lists that represents the 9x9 grid
@@ -211,23 +229,7 @@ class Player6():
             elif self.block[4] != '-':
                 gain -= 10
         """
-	"""
-        if len(self.GoldenMoves) > 4:
-            for point in self.GoldenMoves:
-                if board.block_status[point[0]][point[1]] == self.ourFlag:
-                    gain += 100
-                    self.GoldenMoves.remove(point)
-                    if point in [[0,3], [3,0], [1,2], [2,1]]:
-                        if [1,1] in self.GoldenMoves:
-                            self.GoldenMoves.remove([1,1])
-                        if [2,2] in self.GoldenMoves:
-                            self.GoldenMoves.remove([2,2])
-                    if point in [[0,0], [3,3], [1,1], [2,2]]:
-                        if [1,2] in self.GoldenMoves:
-                            self.GoldenMoves.remove([1,2])
-                        if [2,1] in self.GoldenMoves:
-                            self.GoldenMoves.remove([2,1])
-	"""
+        gain = self.get_extra_utility(temp_GM, board, playerFlag, opFlag, gain)
         #print " calc for all calculated!!!! " , board.block_status, sum(blocks.count(playerFlag) for blocks in board.block_status)
         cnt1 = sum(blocks.count(playerFlag) for blocks in board.block_status)
         cnt2 = sum(blocks.count(opFlag) for blocks in board.block_status)
@@ -373,4 +375,91 @@ class Player6():
         if co == 1:
             gain -= 10
         #print "Gain Returned by Get New is: ", gain
+        return gain
+
+    def get_extra_utility(self, goldenmoves, board, player_sign, opponent_sign, gain):
+        maping = dict()
+        maping[player_sign] = 1; maping['-'] = 0; maping[opponent_sign] = -3
+        cnt = [0,0,0,0,0,0]
+        gm = 0
+        if len(goldenmoves) == 8:
+            for point in goldenmoves:
+                if board.block_status[point[0]][point[1]] == player_sign:
+                    gm += 1
+
+            if gm == 1 or gm == 2:
+                gain +=10
+            if gm > 2:
+                gain += 100
+
+
+        if len(goldenmoves) == 5:
+            for point in goldenmoves:
+                if point == [0,0]:
+                    #print "1 me ayaaaa"
+                    cnt[1] = 0
+                    cnt[1] += maping[board.block_status[0][1]]
+                    cnt[1] += maping[board.block_status[0][2]]
+                    cnt[1] += maping[board.block_status[0][3]]
+                    cnt[2] = 0
+                    cnt[2] += maping[board.block_status[1][0]]
+                    cnt[2] += maping[board.block_status[2][0]]
+                    cnt[2] += maping[board.block_status[3][0]]
+                    cnt[3] = 0
+                    cnt[3] += maping[board.block_status[1][1]]
+                    cnt[3] += maping[board.block_status[2][2]]
+                    cnt[3] += maping[board.block_status[3][3]]
+                    if max(cnt) > 1:
+                        gain += 100
+
+                if point == [3,0]:
+                    #print "2 me ayaaaa"
+                    cnt[1] = 0
+                    cnt[1] += maping[board.block_status[3][1]]
+                    cnt[1] += maping[board.block_status[3][2]]
+                    cnt[1] += maping[board.block_status[3][3]]
+                    cnt[2] = 0
+                    cnt[2] += maping[board.block_status[1][0]]
+                    cnt[2] += maping[board.block_status[2][0]]
+                    cnt[2] += maping[board.block_status[3][0]]
+                    cnt[3] = 0
+                    cnt[3] += maping[board.block_status[2][1]]
+                    cnt[3] += maping[board.block_status[1][2]]
+                    cnt[3] += maping[board.block_status[0][3]]
+                    if max(cnt) > 1:
+                        gain += 100
+
+                if point == [0,3]:
+                    #print "3 me ayaaaa"
+                    cnt[1] = 0
+                    cnt[1] += maping[board.block_status[0][0]]
+                    cnt[1] += maping[board.block_status[0][1]]
+                    cnt[1] += maping[board.block_status[0][2]]
+                    cnt[2] = 0
+                    cnt[2] += maping[board.block_status[1][0]]
+                    cnt[2] += maping[board.block_status[2][0]]
+                    cnt[2] += maping[board.block_status[3][0]]
+                    cnt[3] = 0
+                    cnt[3] += maping[board.block_status[2][1]]
+                    cnt[3] += maping[board.block_status[1][2]]
+                    cnt[3] += maping[board.block_status[3][0]]
+                    if max(cnt) > 1:
+                        gain += 100
+
+                if point == [3,3]:
+                    #print "4 me ayaaaa"
+                    cnt[1] = 0
+                    cnt[1] += maping[board.block_status[3][0]]
+                    cnt[1] += maping[board.block_status[3][1]]
+                    cnt[1] += maping[board.block_status[3][2]]
+                    cnt[2] = 0
+                    cnt[2] += maping[board.block_status[1][3]]
+                    cnt[2] += maping[board.block_status[2][3]]
+                    cnt[2] += maping[board.block_status[0][3]]
+                    cnt[3] = 0
+                    cnt[3] += maping[board.block_status[1][1]]
+                    cnt[3] += maping[board.block_status[2][2]]
+                    cnt[3] += maping[board.block_status[0][0]]
+                    if max(cnt) > 1:
+                        gain += 100
         return gain
