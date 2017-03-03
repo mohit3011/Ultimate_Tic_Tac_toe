@@ -8,7 +8,16 @@ class Player6():
     def __init__(self):
         self.MaxDepth = 3
         self.Util_Matrix = [[0,-1,-10,-100,-1000],[1,0,0,100,0],[10,0,0,0,0],[100,0,0,0,0],[1000,0,0,0,0]]
-        #self.block = ['-' for i in range(16)]
+        self.waysH =[[[0,0],[0,1],[0,2],[0,3]],
+                    [[1,0],[1,1],[1,2],[1,3]],
+                    [[2,0],[2,1],[2,2],[2,3]],
+                    [[3,0],[3,1],[3,2],[3,3]]
+                    ]
+        self.waysV =[[[0,0],[1,0],[2,0],[3,0]],
+                    [[0,1],[1,1],[2,1],[3,1]],
+                    [[0,2],[1,2],[2,2],[3,2]],
+                    [[0,3],[1,3],[2,3],[3,3]]
+                    ]
         self.num = 0
         self.cntp = 0 # how many blocks won by player
         self.cnto = 0 # how many blocks won by opponent
@@ -297,7 +306,7 @@ class Player6():
         gain = self.calculate(positive, negative, gain,0)
         positive = 0
         neutral = 0
-        negative = 0        
+        negative = 0
         for i in range(0, 4):
             if board.board_status[startx + i][starty + 3 - i] == playerFlag:
                 positive += 1
@@ -306,6 +315,43 @@ class Player6():
             else:
                 negative += 1
         gain = self.calculate(positive, negative, gain,0)
+
+        pf = playerFlag
+        if playerFlag == 'x':
+            of = 'o'
+        else:
+            of = 'x'
+        i = 0
+        j = 0
+        tempx = 0
+        tempy  = 0
+        for lineh in self.waysH:
+            for linev in self.waysV:
+                cntph = 0
+                cntoh =0
+                cntpv = 0
+                cntov = 0
+                for point in lineh:
+                    tempx = point[0]
+                    if board.board_status[startx+point[0]][starty+point[1]] == pf:
+                        cntph += 1
+                    elif board.board_status[startx+point[0]][starty+point[1]] == of:
+                        cntoh += 1
+
+                for point in linev:
+                    tempy = point[1]
+                    if board.board_status[startx+point[0]][starty+point[1]] == pf:
+                        cntpv += 1
+                    elif board.board_status[startx+point[0]][starty+point[1]] == of:
+                        cntov += 1
+
+                if cntov==0 and cntph==0:
+                    if cntoh==2 and cntpv==3 and board.board_status[startx+tempx][starty+tempy]==pf:
+                        gain += 10
+
+                if cntpv==0 and cntoh==0:
+                    if cntph==3 and cntov==2 and board.board_status[startx+tempx][starty+tempy]==pf:
+                        gain += 10
         return gain
 
     def calculate(self, positive, negative, gain, flag_m):
@@ -315,53 +361,6 @@ class Player6():
             gain = gain + 10 * self.Util_Matrix[positive][negative]
 
         return gain
-
-    """
-    def calculate(self, positive, negative, gain , flag_m):
-
-
-        if flag_m==0:
-            if negative == 4:
-                gain -= 1000
-            if negative == 3:
-                gain -= 100
-            if negative == 2:
-                gain -= 10
-            if negative == 1:
-                gain -= 1
-
-            if positive == 4:
-                gain += 1000
-            if positive == 3:
-                gain += 100
-            if positive == 2:
-                gain += 10
-            if positive == 1:
-                gain += 1
-
-        else:
-            if negative == 4:
-                gain -= 10000
-            if negative == 3:
-                gain -= 1000
-            if negative == 2:
-                gain -= 100
-            if negative == 1:
-                gain -= 10
-
-            if positive == 4:
-                gain += 10000
-            if positive == 3:
-                gain += 1000
-            if positive == 2:
-                gain += 100
-            if positive == 1:
-                gain += 10
-
-
-        return gain
-    """
-
 
 
 
@@ -410,92 +409,3 @@ class Player6():
             gain += val
         #p_gainrint "Gain Returned by Get Factor is: ", gain
         return gain
-
-    """
-    def get_extra_utility(self, goldenmoves, board, player_sign, opponent_sign, gain):
-        maping = dict()
-        maping[player_sign] = 1; maping['-'] = 0; maping[opponent_sign] = -3
-        cnt = [0,0,0,0,0,0]
-        gm = 0
-        if len(goldenmoves) == 8:
-            for point in goldenmoves:
-                if board.block_status[point[0]][point[1]] == player_sign:
-                    gm += 1
-
-            if gm == 1 or gm == 2:
-                gain +=10
-            if gm > 2:
-                gain += 100
-
-
-        if len(goldenmoves) == 5:
-            for point in goldenmoves:
-                if point == [0,0]:
-                    #print "1 me ayaaaa"
-                    cnt[1] = 0
-                    cnt[1] += maping[board.block_status[0][1]]
-                    cnt[1] += maping[board.block_status[0][2]]
-                    cnt[1] += maping[board.block_status[0][3]]
-                    cnt[2] = 0
-                    cnt[2] += maping[board.block_status[1][0]]
-                    cnt[2] += maping[board.block_status[2][0]]
-                    cnt[2] += maping[board.block_status[3][0]]
-                    cnt[3] = 0
-                    cnt[3] += maping[board.block_status[1][1]]
-                    cnt[3] += maping[board.block_status[2][2]]
-                    cnt[3] += maping[board.block_status[3][3]]
-                    if max(cnt) > 1:
-                        gain += 100
-
-                if point == [3,0]:
-                    #print "2 me ayaaaa"
-                    cnt[1] = 0
-                    cnt[1] += maping[board.block_status[3][1]]
-                    cnt[1] += maping[board.block_status[3][2]]
-                    cnt[1] += maping[board.block_status[3][3]]
-                    cnt[2] = 0
-                    cnt[2] += maping[board.block_status[1][0]]
-                    cnt[2] += maping[board.block_status[2][0]]
-                    cnt[2] += maping[board.block_status[3][0]]
-                    cnt[3] = 0
-                    cnt[3] += maping[board.block_status[2][1]]
-                    cnt[3] += maping[board.block_status[1][2]]
-                    cnt[3] += maping[board.block_status[0][3]]
-                    if max(cnt) > 1:
-                        gain += 100
-
-                if point == [0,3]:
-                    #print "3 me ayaaaa"
-                    cnt[1] = 0
-                    cnt[1] += maping[board.block_status[0][0]]
-                    cnt[1] += maping[board.block_status[0][1]]
-                    cnt[1] += maping[board.block_status[0][2]]
-                    cnt[2] = 0
-                    cnt[2] += maping[board.block_status[1][0]]
-                    cnt[2] += maping[board.block_status[2][0]]
-                    cnt[2] += maping[board.block_status[3][0]]
-                    cnt[3] = 0
-                    cnt[3] += maping[board.block_status[2][1]]
-                    cnt[3] += maping[board.block_status[1][2]]
-                    cnt[3] += maping[board.block_status[3][0]]
-                    if max(cnt) > 1:
-                        gain += 100
-
-                if point == [3,3]:
-                    #print "4 me ayaaaa"
-                    cnt[1] = 0
-                    cnt[1] += maping[board.block_status[3][0]]
-                    cnt[1] += maping[board.block_status[3][1]]
-                    cnt[1] += maping[board.block_status[3][2]]
-                    cnt[2] = 0
-                    cnt[2] += maping[board.block_status[1][3]]
-                    cnt[2] += maping[board.block_status[2][3]]
-                    cnt[2] += maping[board.block_status[0][3]]
-                    cnt[3] = 0
-                    cnt[3] += maping[board.block_status[1][1]]
-                    cnt[3] += maping[board.block_status[2][2]]
-                    cnt[3] += maping[board.block_status[0][0]]
-                    if max(cnt) > 1:
-                        gain += 100
-        return gain
-        """
