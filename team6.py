@@ -35,7 +35,7 @@ class Player6():
 
         
         if depth == itr_max_depth:
-            utility = self.get_utility(board, player_sign, opponent_sign, gmoves)
+            utility = self.utility_get(board, player_sign, opponent_sign, gmoves)
             #print " Returning utility", utility, best_row, best_coloumn
             return (utility, best_row, best_coloumn)
 
@@ -47,7 +47,7 @@ class Player6():
             #NOT SURE ABOUT THIS
 
             if len(available_moves) == 0:       ##### No moves left at depth
-                utility = self.get_utility(board, player_sign, opponent_sign, gmoves)
+                utility = self.utility_get(board, player_sign, opponent_sign, gmoves)
                 #self.MaxDepth = max(depth, 4)
                 return (utility, best_row, best_coloumn)
             #print "Minmax ke andar"
@@ -174,7 +174,7 @@ class Player6():
         return (next_move[1], next_move[2])
 
 
-    def get_utility(self, board, playerFlag, opFlag, temp_GM):
+    def utility_get(self, board, playerFlag, opFlag, temp_GM):
         """
         Function to find and return utility of a block
         :param board: is the list of lists that represents the 9x9 grid
@@ -190,6 +190,21 @@ class Player6():
         lim = 1000.0
         for i in range(16):
             utility_values_block[i] /= lim
+
+        p = 0
+        positive = 0
+        negative = 0
+        for i in range(4):
+            p += utility_values_block[(4 * i) + 3 -i]
+            if board.block_status[i][3-i] == playerFlag:
+                positive += 1
+            elif board.block_status[i][3-i] == opFlag:
+                negative += 1
+
+        gain = self.get_factor(p, gain)
+        gain = self.calculate(positive, negative, gain,1)
+
+
         for i in range(4):
             p = 0
             positive = 0
@@ -201,7 +216,9 @@ class Player6():
                 elif board.block_status[j][i] == opFlag:
                     negative += 1
             gain = self.get_factor(p, gain)
-            gain = self.get_new(positive, negative, gain)
+            gain = self.calculate(positive, negative, gain,1)
+
+
         for j in range(4):
             p = 0
             positive = 0
@@ -214,8 +231,9 @@ class Player6():
                     negative += 1
             #print "\n\n\nFound utility at cell level." , self.var
             gain = self.get_factor(p, gain)
-            gain = self.get_new(positive, negative, gain)
+            gain = self.calculate(positive, negative, gain,1)
 
+        
         p = 0
         positive = 0
         negative = 0
@@ -227,20 +245,9 @@ class Player6():
                 negative += 1
 
         gain = self.get_factor(p, gain)
-        gain = self.get_new(positive, negative, gain)
+        gain = self.calculate(positive, negative, gain,1)
 
-        p = 0
-        positive = 0
-        negative = 0
-        for i in range(4):
-            p += utility_values_block[(4 * i) + 3 -i]
-            if board.block_status[i][3-i] == playerFlag:
-                positive += 1
-            elif board.block_status[i][3-i] == opFlag:
-                negative += 1
-
-        gain = self.get_new(positive, negative, gain)
-        gain = self.get_factor(p, gain)
+        
         """
         if self.cntp < 2:
             if self.block[4] == playerFlag:
@@ -281,7 +288,7 @@ class Player6():
                     positive += 1
                 else:
                     negative += 1
-            gain = self.calc(positive, negative, gain)
+            gain = self.calculate(positive, negative, gain,0)
 
         for j in range(starty, starty + 4):
             positive = 0
@@ -294,7 +301,7 @@ class Player6():
                     positive += 1
                 else:
                     negative += 1
-            gain = self.calc(positive, negative, gain)
+            gain = self.calculate(positive, negative, gain,0)
         positive = 0
         neutral = 0
         negative = 0
@@ -305,7 +312,7 @@ class Player6():
                 neutral += 1
             else:
                 negative += 1
-        gain = self.calc(positive, negative, gain)
+        gain = self.calculate(positive, negative, gain,0)
         for i in range(0, 4):
             if board.board_status[startx + i][starty + 3 - i] == playerFlag:
                 positive += 1
@@ -313,89 +320,105 @@ class Player6():
                 neutral += 1
             else:
                 negative += 1
-        gain = self.calc(positive, negative, gain)
+        gain = self.calculate(positive, negative, gain,0)
         return gain
-    def calc(self, cx, co, gain):
-        if cx == 4:
-            gain += 1000
-        if cx == 3:
-            gain += 100
-        if cx == 2:
-            gain += 10
-        if cx == 1:
-            gain += 1
+    
 
-        if co == 4:
-            gain -= 1000
-        if co == 3:
-            gain -= 100
-        if co == 2:
-            gain -= 10
-        if co == 1:
-            gain -= 1
+    def calculate(self, positive, negative, gain , flag_m):
+
+
+        if flag_m==0:
+            if negative == 4:
+                gain -= 1000
+            if negative == 3:
+                gain -= 100
+            if negative == 2:
+                gain -= 10
+            if negative == 1:
+                gain -= 1
+
+            if positive == 4:
+                gain += 1000
+            if positive == 3:
+                gain += 100
+            if positive == 2:
+                gain += 10
+            if positive == 1:
+                gain += 1
+        
+        else:
+            if negative == 4:
+                gain -= 10000
+            if negative == 3:
+                gain -= 1000
+            if negative == 2:
+                gain -= 100
+            if negative == 1:
+                gain -= 10
+
+            if positive == 4:
+                gain += 10000
+            if positive == 3:
+                gain += 1000
+            if positive == 2:
+                gain += 100
+            if positive == 1:
+                gain += 10 
+
+
         return gain
 
-    def get_factor(self, p, gain):
-        if p < 1 and p >= -1:
-            gain += p
-        if p >= 1 and p < 2:
-            val = 1
-            val += (p - 1) * 9
-            gain += val
-        if p >= 2 and p < 3:
-            val = 10
-            val += (p - 2) * 90
-            gain += val
-        if p >= 3 and p < 4:
+
+
+
+
+    def get_factor(self, p_gain, gain):
+        
+        if p_gain < 1 and p_gain >= -1:
+            gain += p_gain
+        
+        if p_gain >= 3 and p_gain < 4:
             val = 100
-            val += (p - 3) * 900
+            val += (p_gain - 3) * 900
             gain += val
-        if p >= 4:
-            val = 1000
-            val += (p - 4) * 9000
-            gain += val
-
-        if p >= -2 and p < -1:
+        
+        if p_gain >= -2 and p_gain < -1:
             val = -1
-            val -= (abs(p) - 1) * 9
+            val -= (abs(p_gain) - 1) * 9
             gain += val
-        if p >= -3 and p < -2:
-            val = -10
-            val -= (abs(p) - 2) * 90
-            gain += val
-        if p < -3 and p >=-4:
+        
+        if p_gain < -3 and p_gain >=-4:
             val = -100
-            val -= (abs(p) - 3) * 900
+            val -= (abs(p_gain) - 3) * 900
             gain += val
-        if p < -4:
+
+        if p_gain >= 1 and p_gain < 2:
+            val = 1
+            val += (p_gain - 1) * 9
+            gain += val
+
+        if p_gain >= 4:
+            val = 1000
+            val += (p_gain - 4) * 9000
+            gain += val
+        if p_gain >= 2 and p_gain < 3:
+            val = 10
+            val += (p_gain - 2) * 90
+            gain += val
+
+        
+        if p_gain < -4:
             val = -1000
-            val -= (abs(p) - 4) * 9000
+            val -= (abs(p_gain) - 4) * 9000
             gain += val
-        #print "Gain Returned by Get Factor is: ", gain
+        if p_gain >= -3 and p_gain < -2:
+            val = -10
+            val -= (abs(p_gain) - 2) * 90
+            gain += val
+        #p_gainrint "Gain Returned by Get Factor is: ", gain
         return gain
 
-    def get_new(self, cx, co, gain):
-
-        if cx == 4:
-            gain += 10000
-        if cx == 3:
-            gain += 1000
-        if cx == 2:
-            gain += 100
-        if cx == 1:
-            gain += 10
-
-        if co == 4:
-            gain -= 10000
-        if co == 3:
-            gain -= 1000
-        if co == 2:
-            gain -= 100
-        if co == 1:
-            gain -= 10
-        #print "Gain Returned by Get New is: ", gain
-        return gain
-
+    
     def get_extra_utility(self, goldenmoves, board, player_sign, opponent_sign, gain):
         maping = dict()
         maping[player_sign] = 1; maping['-'] = 0; maping[opponent_sign] = -3
