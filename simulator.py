@@ -7,7 +7,7 @@ from team6 import *
 from team2 import *
 from team20y import *
 from P4 import *
-from player1 import *
+
 #from team2 import *
 
 class TimedOutExc(Exception):
@@ -324,7 +324,7 @@ if __name__ == '__main__':
 	option = sys.argv[1]
 	if option == '1':
 		obj1 = Player6()
-		obj2 = Player1()
+		obj2 = player4()
 
 	elif option == '2':
 		obj1 = Random_Player()
