@@ -7,17 +7,17 @@ class Player6():
     # Player6 agent to play game.
     def __init__(self):
         self.MaxDepth = 3
+        self.Util_Matrix = [[0,-1,-10,-100,-1000],[1,0,0,0,0],[10,0,0,0,0],[100,0,0,0,0],[1000,0,0,0,0]]
         #self.block = ['-' for i in range(16)]
         self.num = 0
         self.cntp = 0 # how many blocks won by player
         self.cnto = 0 # how many blocks won by opponent
-        self.GoldenMoves = [[0,0], [0,3], [3,0], [3,3], [1,1], [2,2], [1,2], [2,1]]
         self.ourFlag = None
         pass
         #Rest of the variables will be defined
 
     # Function implementing minmax algorithm with alph-beta pruning.
-    def MinMax(self, board, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn, gmoves, itr_max_depth,st_time):
+    def MinMax(self, board, old_move, node_type_maxnode, player_sign, opponent_sign, depth, alpha, beta, best_row, best_coloumn, itr_max_depth,st_time):
         """
         board :- 16*16 matrix representing game board
         status_blocks :- bool flags list for all block give their status_blocks
@@ -33,9 +33,9 @@ class Player6():
             utility = 0
             return (utility, best_row, best_coloumn)
 
-        
+
         if depth == itr_max_depth:
-            utility = self.utility_get(board, player_sign, opponent_sign, gmoves)
+            utility = self.utility_get(board, player_sign, opponent_sign)
             #print " Returning utility", utility, best_row, best_coloumn
             return (utility, best_row, best_coloumn)
 
@@ -47,7 +47,7 @@ class Player6():
             #NOT SURE ABOUT THIS
 
             if len(available_moves) == 0:       ##### No moves left at depth
-                utility = self.utility_get(board, player_sign, opponent_sign, gmoves)
+                utility = self.utility_get(board, player_sign, opponent_sign)
                 #self.MaxDepth = max(depth, 4)
                 return (utility, best_row, best_coloumn)
             #print "Minmax ke andar"
@@ -59,11 +59,9 @@ class Player6():
 
             for move in available_moves:  # assign player sign whose turn is this
                 #print "move--->",move
-               
+
 
                 temp_board = copy.deepcopy(board)
-                temp_GM = copy.deepcopy(gmoves)
-
 
                 sign = player_sign
                 if not node_type_maxnode:   sign = opponent_sign
@@ -76,7 +74,7 @@ class Player6():
                     node_type_maxnode1 = True
 
                 #if len(available_moves)>17 and depth!=0:
-                utility = self.MinMax(temp_board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn, temp_GM,itr_max_depth,st_time) # agains call MinMax
+                utility = self.MinMax(temp_board, move, node_type_maxnode1, player_sign, opponent_sign, depth+1 , alpha, beta, best_row, best_coloumn, itr_max_depth,st_time) # agains call MinMax
 
                 #print "utility-->"," ",utility
                 #print node_type_maxnode
@@ -120,20 +118,6 @@ class Player6():
         Chooses a move based on minimax and alphabeta-pruning algorithm and returns it
         :rtype tuple: the co-ordinates in 9X9 board
         """
-        for point in self.GoldenMoves:
-            if board.block_status[point[0]][point[1]] == self.ourFlag:
-                self.GoldenMoves.remove(point)
-                if point in [[0,3], [3,0], [1,2], [2,1]]:
-                    if [1,1] in self.GoldenMoves:
-                        self.GoldenMoves.remove([1,1])
-                    if [2,2] in self.GoldenMoves:
-                        self.GoldenMoves.remove([2,2])
-                if point in [[0,0], [3,3], [1,1], [2,2]]:
-                    if [1,2] in self.GoldenMoves:
-                        self.GoldenMoves.remove([1,2])
-                    if [2,1] in self.GoldenMoves:
-                        self.GoldenMoves.remove([2,1])
-
         if old_move == (-1, -1):
             return (4, 4)
         startt = time.time()
@@ -154,7 +138,6 @@ class Player6():
         #print "bich me ayaayaya"
         temp_block = copy.deepcopy(board.block_status)
 
-        temp_GM = copy.deepcopy(self.GoldenMoves)
         #print "minmax me ayaaaaa!"
         elapsed = (time.time() - startt)
         temp_move = (0,0,0)
@@ -163,7 +146,7 @@ class Player6():
             #print itr_max_depth
             next_move = temp_move
             temp_move = self.MinMax(temp_board, old_move, True, player_flag, flag2, 0, -100000000000000.0, 10000000000000.0, -1,
-                                     -1, temp_GM , itr_max_depth,startt)
+                                     -1, itr_max_depth,startt)
             #print "minmax se bahar ayayayyayayay\n\n"
             itr_max_depth += 1
             elapsed = (time.time() - startt)
@@ -174,7 +157,7 @@ class Player6():
         return (next_move[1], next_move[2])
 
 
-    def utility_get(self, board, playerFlag, opFlag, temp_GM):
+    def utility_get(self, board, playerFlag, opFlag):
         """
         Function to find and return utility of a block
         :param board: is the list of lists that represents the 9x9 grid
@@ -233,7 +216,7 @@ class Player6():
             gain = self.get_factor(p, gain)
             gain = self.calculate(positive, negative, gain,1)
 
-        
+
         p = 0
         positive = 0
         negative = 0
@@ -247,7 +230,7 @@ class Player6():
         gain = self.get_factor(p, gain)
         gain = self.calculate(positive, negative, gain,1)
 
-        
+
         """
         if self.cntp < 2:
             if self.block[4] == playerFlag:
@@ -255,7 +238,6 @@ class Player6():
             elif self.block[4] != '-':
                 gain -= 10
         """
-        gain = self.get_extra_utility(temp_GM, board, playerFlag, opFlag, gain)
         #print " calc for all calculated!!!! " , board.block_status, sum(blocks.count(playerFlag) for blocks in board.block_status)
         cnt1 = sum(blocks.count(playerFlag) for blocks in board.block_status)
         cnt2 = sum(blocks.count(opFlag) for blocks in board.block_status)
@@ -313,6 +295,9 @@ class Player6():
             else:
                 negative += 1
         gain = self.calculate(positive, negative, gain,0)
+        positive = 0
+        neutral = 0
+        negative = 0        
         for i in range(0, 4):
             if board.board_status[startx + i][starty + 3 - i] == playerFlag:
                 positive += 1
@@ -322,8 +307,16 @@ class Player6():
                 negative += 1
         gain = self.calculate(positive, negative, gain,0)
         return gain
-    
 
+    def calculate(self, positive, negative, gain, flag_m):
+        if flag_m==0:
+            gain = gain + self.Util_Matrix[positive][negative]
+        else:
+            gain = gain + 10 * self.Util_Matrix[positive][negative]
+
+        return gain
+
+    """
     def calculate(self, positive, negative, gain , flag_m):
 
 
@@ -345,7 +338,7 @@ class Player6():
                 gain += 10
             if positive == 1:
                 gain += 1
-        
+
         else:
             if negative == 4:
                 gain -= 10000
@@ -363,30 +356,30 @@ class Player6():
             if positive == 2:
                 gain += 100
             if positive == 1:
-                gain += 10 
+                gain += 10
 
 
         return gain
-
+    """
 
 
 
 
     def get_factor(self, p_gain, gain):
-        
+
         if p_gain < 1 and p_gain >= -1:
             gain += p_gain
-        
+
         if p_gain >= 3 and p_gain < 4:
             val = 100
             val += (p_gain - 3) * 900
             gain += val
-        
+
         if p_gain >= -2 and p_gain < -1:
             val = -1
             val -= (abs(p_gain) - 1) * 9
             gain += val
-        
+
         if p_gain < -3 and p_gain >=-4:
             val = -100
             val -= (abs(p_gain) - 3) * 900
@@ -406,7 +399,7 @@ class Player6():
             val += (p_gain - 2) * 90
             gain += val
 
-        
+
         if p_gain < -4:
             val = -1000
             val -= (abs(p_gain) - 4) * 9000
@@ -418,7 +411,7 @@ class Player6():
         #p_gainrint "Gain Returned by Get Factor is: ", gain
         return gain
 
-    
+    """
     def get_extra_utility(self, goldenmoves, board, player_sign, opponent_sign, gain):
         maping = dict()
         maping[player_sign] = 1; maping['-'] = 0; maping[opponent_sign] = -3
@@ -505,3 +498,4 @@ class Player6():
                     if max(cnt) > 1:
                         gain += 100
         return gain
+        """
