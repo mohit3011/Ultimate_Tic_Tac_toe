@@ -7,7 +7,7 @@ class Player6():
     # Player6 agent to play game.
     def __init__(self):
         self.MaxDepth = 3
-        self.Util_Matrix = [[0,-1,-10,-100,-1000],[1,0,0,0,0],[10,0,0,0,0],[100,0,0,0,0],[1000,0,0,0,0]]
+        self.Util_Matrix = [[0,-1,-10,-100,-1000],[1,0,0,100,0],[10,0,0,0,0],[100,0,0,0,0],[1000,0,0,0,0]]
         #self.block = ['-' for i in range(16)]
         self.num = 0
         self.cntp = 0 # how many blocks won by player
